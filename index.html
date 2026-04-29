@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playa y Estacionamiento</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 font-inter text-gray-800 min-h-screen flex flex-col relative transition-all duration-300">
+    <!-- Background overlay para logo si está activo -->
+    <div id="bgLogo" class="fixed inset-0 z-[-1] bg-center bg-no-repeat bg-contain opacity-5 hidden transition-opacity duration-500" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 512 512\' fill=\'%23000000\'%3E%3Cpath d=\'M256 0c-74.4 0-134.8 60.4-134.8 134.8 0 29.5 9.4 56.8 25.4 79.2L256 512l109.4-298c16-22.4 25.4-49.7 25.4-79.2C390.8 60.4 330.4 0 256 0zm0 202c-37 0-67-30-67-67s30-67 67-67 67 30 67 67-30 67-67 67z\'/%3E%3C/svg%3E');"></div>
+
+    <!-- HEADER / NAVBAR -->
+    <header id="mainHeader" class="bg-blue-900 text-white shadow-md hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo & Title -->
+                <div class="flex items-center">
+                    <i class="fa-solid fa-car-side text-2xl mr-3 text-blue-300"></i>
+                    <h1 class="font-bold text-lg md:text-xl tracking-wide">PLAYA Y ESTACIONAMIENTO</h1>
+                </div>
+                <!-- User Info & Logout -->
+                <div class="flex items-center gap-4">
+                    <div class="text-right hidden sm:block">
+                        <p id="navUserName" class="text-sm font-semibold"></p>
+                        <p id="navUserRole" class="text-xs text-blue-300 capitalize"></p>
+                    </div>
+                    <button id="btnLogout" class="text-white hover:text-red-300 transition-colors">
+                        <i class="fa-solid fa-right-from-bracket text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Navegación por Pestañas -->
+        <nav class="bg-blue-800 px-4 flex space-x-1 overflow-x-auto no-scrollbar">
+            <button class="nav-tab active px-4 py-3 text-sm font-medium border-b-2 border-white" data-target="viewPlanilla">
+                <i class="fa-solid fa-table-list mr-2"></i>Planilla
+            </button>
+            <button class="nav-tab px-4 py-3 text-sm font-medium text-blue-200 border-b-2 border-transparent hover:text-white" data-target="viewHistorial">
+                <i class="fa-solid fa-calendar-days mr-2"></i>Historial
+            </button>
+            <button id="navSettings" class="nav-tab px-4 py-3 text-sm font-medium text-blue-200 border-b-2 border-transparent hover:text-white hidden" data-target="viewConfig">
+                <i class="fa-solid fa-gear mr-2"></i>Configuración
+            </button>
+        </nav>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="flex-grow w-full max-w-7xl mx-auto px-2 sm:px-4 py-6 flex flex-col items-center">
+        
+        <!-- VISTA: LOGIN -->
+        <section id="viewLogin" class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden mt-10 transform transition-all">
+            <div class="bg-blue-900 p-8 text-center text-white">
+                <i class="fa-solid fa-car-side text-5xl mb-4 text-blue-300 drop-shadow-md"></i>
+                <h2 class="text-2xl font-bold mb-1">Bienvenido</h2>
+                <p class="text-blue-200 text-sm">Sistema de control diario</p>
+            </div>
+            <div class="p-8">
+                <form id="loginForm" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Seleccione su usuario</label>
+                        <select id="loginUserSelect" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 py-3 px-4 bg-gray-50 outline-none border">
+                            <!-- Opciones cargadas por JS -->
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                        Ingresar <i class="fa-solid fa-arrow-right ml-2 mt-1"></i>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- VISTA: PLANILLA DIARIA -->
+        <section id="viewPlanilla" class="view-section w-full hidden flex-col">
+            <!-- Controles de día y turno -->
+            <div class="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm mb-4 gap-4">
+                <div class="flex items-center text-xl font-bold text-gray-800">
+                    <i class="fa-regular fa-calendar text-blue-600 mr-2"></i>
+                    <span id="displayDate"></span>
+                </div>
+                <div class="flex bg-gray-100 p-1 rounded-lg">
+                    <button id="btnShiftManana" class="shift-btn px-4 py-2 rounded-md text-sm font-medium bg-white shadow text-blue-700 transition-all">
+                        <i class="fa-solid fa-sun mr-1"></i> Mañana
+                    </button>
+                    <button id="btnShiftTarde" class="shift-btn px-4 py-2 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700 transition-all">
+                        <i class="fa-solid fa-moon mr-1"></i> Tarde
+                    </button>
+                </div>
+            </div>
+
+            <!-- Warning: Modo histórico (Solo lectura) -->
+            <div id="historyWarning" class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 rounded-r-xl shadow-sm hidden w-full">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fa-solid fa-triangle-exclamation text-yellow-400"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700 font-medium">Estás viendo un registro histórico.</p>
+                        <p id="historyWarningText" class="text-sm text-yellow-600 mt-1"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario para agregar vehículo (Sticky on mobile or top of table) -->
+            <div id="addRecordContainer" class="bg-white p-4 rounded-xl shadow-sm mb-4 border-l-4 border-blue-500">
+                <form id="addRecordForm" class="flex flex-col md:flex-row gap-3 items-end">
+                    <div class="w-full md:w-1/4">
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Patente / Detalle</label>
+                        <input type="text" id="recordPlate" required placeholder="AAA 123" class="w-full border border-gray-300 rounded-md py-2 px-3 text-sm uppercase focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    </div>
+                    <div class="w-full md:w-1/4">
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Categoría</label>
+                        <select id="recordType" class="w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500 outline-none">
+                            <option value="auto">Auto</option>
+                            <option value="camioneta">Camioneta</option>
+                            <option value="moto">Moto</option>
+                        </select>
+                    </div>
+                    <div class="w-full md:w-1/4">
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Total ($)</label>
+                        <input type="number" id="recordTotal" required class="w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 font-bold text-gray-800">
+                    </div>
+                    <div class="w-full md:w-1/4">
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors flex justify-center items-center h-[38px]">
+                            <i class="fa-solid fa-plus mr-2"></i> Anotar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tabla de Registros -->
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden flex-grow relative">
+                <div class="overflow-x-auto max-h-[500px] md:max-h-[600px] no-scrollbar border-t border-gray-100">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0 z-10 shadow-sm">
+                            <tr>
+                                <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-10">#</th>
+                                <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ingreso</th>
+                                <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Vehículo</th>
+                                <th scope="col" class="px-3 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Importe</th>
+                                <th scope="col" class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Salida</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsTableBody" class="bg-white divide-y divide-gray-100">
+                            <!-- Filas generadas por JS -->
+                        </tbody>
+                    </table>
+                    
+                    <div id="emptyTableState" class="hidden flex-col items-center justify-center p-10 text-gray-400">
+                        <i class="fa-solid fa-folder-open text-4xl mb-3 opacity-30"></i>
+                        <p class="text-sm">No hay vehículos registrados en este turno.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Totales -->
+            <div class="bg-gray-800 text-white rounded-xl shadow-lg mt-4 p-4 sticky bottom-4 z-20">
+                <div class="flex flex-wrap justify-between items-center gap-4">
+                    <div class="flex space-x-4 md:space-x-8 w-full md:w-auto overflow-x-auto no-scrollbar">
+                        <div class="text-center min-w-[60px]">
+                            <p class="text-[10px] md:text-xs text-gray-400 uppercase tracking-wider">Autos</p>
+                            <p id="countAutos" class="text-lg md:text-xl font-bold">0</p>
+                        </div>
+                        <div class="text-center min-w-[60px]">
+                            <p class="text-[10px] md:text-xs text-gray-400 uppercase tracking-wider">Camionetas</p>
+                            <p id="countCamionetas" class="text-lg md:text-xl font-bold">0</p>
+                        </div>
+                        <div class="text-center min-w-[60px]">
+                            <p class="text-[10px] md:text-xs text-gray-400 uppercase tracking-wider">Motos</p>
+                            <p id="countMotos" class="text-lg md:text-xl font-bold">0</p>
+                        </div>
+                    </div>
+                    <div class="text-right border-t md:border-t-0 md:border-l border-gray-600 pt-3 md:pt-0 md:pl-6 w-full md:w-auto flex justify-between md:block items-center">
+                        <p class="text-xs text-gray-400 uppercase tracking-wider mr-4 md:mr-0">Total Recaudado</p>
+                        <p id="totalDayAmount" class="text-2xl font-bold text-green-400">$0</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA: HISTORIAL -->
+        <section id="viewHistorial" class="view-section w-full hidden flex-col max-w-4xl">
+            <div class="bg-white rounded-xl shadow-sm p-4 md:p-6">
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 border-b pb-4 gap-4">
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <i class="fa-solid fa-clock-rotate-left text-blue-600 mr-3"></i>
+                        Historial
+                    </h2>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <select id="historyMonthSelect" class="w-full sm:w-auto border border-gray-300 rounded-md py-2 px-3 text-sm focus:ring-blue-500 outline-none bg-gray-50 font-medium">
+                            <!-- Generado por JS -->
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Calendario -->
+                <div class="overflow-hidden rounded-lg border border-gray-100">
+                    <div class="grid grid-cols-7 gap-1 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase py-2">
+                        <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+                    </div>
+                    <div id="historyCalendarGrid" class="grid grid-cols-7 gap-px bg-gray-100 border-t border-gray-100">
+                        <!-- Días generados por JS -->
+                    </div>
+                </div>
+                
+                <!-- Leyenda -->
+                <div class="mt-6 pt-4 border-t border-gray-100 flex flex-wrap justify-center gap-4 md:gap-8 text-xs md:text-sm text-gray-600">
+                    <div class="flex items-center"><span class="w-4 h-4 rounded-full bg-red-100 border border-red-300 shadow-inner mr-2"></span> Baja (<50)</div>
+                    <div class="flex items-center"><span class="w-4 h-4 rounded-full bg-orange-100 border border-orange-300 shadow-inner mr-2"></span> Media (50-100)</div>
+                    <div class="flex items-center"><span class="w-4 h-4 rounded-full bg-green-100 border border-green-300 shadow-inner mr-2"></span> Alta (>100)</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA: CONFIGURACIÓN -->
+        <section id="viewConfig" class="view-section w-full hidden flex-col max-w-2xl">
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div class="bg-blue-900 p-6 text-white flex items-center">
+                    <i class="fa-solid fa-sliders text-2xl mr-3 text-blue-300"></i>
+                    <h2 class="text-xl font-bold">Panel de Control</h2>
+                </div>
+                
+                <div class="p-6 space-y-8">
+                    <!-- Precios -->
+                    <div class="bg-gray-50 p-5 rounded-lg border border-gray-100">
+                        <h3 class="text-md font-semibold text-gray-800 border-b border-gray-200 pb-2 mb-4 flex items-center">
+                            <i class="fa-solid fa-tags text-gray-500 mr-2"></i> Lista de Precios
+                        </h3>
+                        <form id="configPricesForm" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1 uppercase">Auto ($)</label>
+                                <input type="number" id="cfgPriceAuto" class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 outline-none bg-white shadow-sm transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1 uppercase">Camioneta ($)</label>
+                                <input type="number" id="cfgPriceCamioneta" class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 outline-none bg-white shadow-sm transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1 uppercase">Moto ($)</label>
+                                <input type="number" id="cfgPriceMoto" class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 outline-none bg-white shadow-sm transition-all">
+                            </div>
+                            <div class="sm:col-span-3 flex justify-end mt-2">
+                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md shadow transition-colors flex items-center">
+                                    <i class="fa-solid fa-floppy-disk mr-2"></i> Guardar Precios
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Personal -->
+                    <div class="bg-gray-50 p-5 rounded-lg border border-gray-100">
+                        <h3 class="text-md font-semibold text-gray-800 border-b border-gray-200 pb-2 mb-4 flex items-center">
+                            <i class="fa-solid fa-users text-gray-500 mr-2"></i> Personal Autorizado
+                        </h3>
+                        <div class="mb-4 bg-white rounded-md border border-gray-200 overflow-hidden">
+                            <ul id="configUsersList" class="divide-y divide-gray-100 max-h-48 overflow-y-auto">
+                                <!-- Lista de usuarios por JS -->
+                            </ul>
+                        </div>
+                        <form id="configAddUserForm" class="flex flex-col sm:flex-row gap-2">
+                            <input type="text" id="cfgNewUserName" placeholder="Nombre completo" required class="flex-grow border border-gray-300 rounded-md py-2 px-3 text-sm focus:ring-blue-500 outline-none shadow-sm">
+                            <select id="cfgNewUserRole" class="border border-gray-300 rounded-md py-2 px-3 text-sm focus:ring-blue-500 outline-none bg-white shadow-sm w-full sm:w-auto">
+                                <option value="empleado">Empleado</option>
+                                <option value="jefe">Jefe</option>
+                            </select>
+                            <button type="submit" class="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-md shadow transition-colors flex justify-center items-center w-full sm:w-auto">
+                                <i class="fa-solid fa-user-plus sm:mr-0 mr-2"></i> <span class="sm:hidden">Agregar Usuario</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Visual -->
+                    <div class="bg-gray-50 p-5 rounded-lg border border-gray-100">
+                        <h3 class="text-md font-semibold text-gray-800 border-b border-gray-200 pb-2 mb-4 flex items-center">
+                            <i class="fa-solid fa-palette text-gray-500 mr-2"></i> Apariencia
+                        </h3>
+                        <div class="flex items-center justify-between py-2">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-gray-800">Marca de agua de fondo</span>
+                                <span class="text-xs text-gray-500">Muestra un logo gigante transparente en el fondo.</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="cfgToggleLogo" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal para editar registro / marcar salida -->
+    <div id="recordModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 w-[90%] max-w-sm transform scale-95 transition-transform duration-300" id="recordModalContent">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800 flex items-center" id="modalTitle">
+                    <i class="fa-solid fa-car-side text-blue-600 mr-2"></i> Detalle
+                </h3>
+                <button id="btnCloseModalX" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 text-sm text-gray-700">
+                    <div class="flex justify-between border-b border-blue-100 pb-2 mb-2">
+                        <span class="text-gray-500">Vehículo</span>
+                        <strong id="modPlate" class="text-lg uppercase text-gray-900"></strong>
+                    </div>
+                    <div class="flex justify-between border-b border-blue-100 pb-2 mb-2">
+                        <span class="text-gray-500">Categoría</span>
+                        <strong id="modType" class="capitalize"></strong>
+                    </div>
+                    <div class="flex justify-between border-b border-blue-100 pb-2 mb-2">
+                        <span class="text-gray-500">Hora Ingreso</span>
+                        <strong id="modEntry"></strong>
+                    </div>
+                    <div class="flex justify-between border-b border-blue-100 pb-2 mb-2">
+                        <span class="text-gray-500">Importe</span>
+                        <strong id="modTotal" class="text-green-600">$0</strong>
+                    </div>
+                    <div class="flex justify-between mt-1 text-xs">
+                        <span class="text-gray-400">Atendido por</span>
+                        <span id="modUser" class="text-gray-500 font-medium"></span>
+                    </div>
+                </div>
+
+                <div id="modalActionButtons" class="pt-2">
+                    <button id="btnSetExit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl flex items-center justify-center transition-colors shadow-sm mb-3">
+                        <i class="fa-solid fa-flag-checkered mr-2"></i> Marcar Salida Ahora
+                    </button>
+                    <button id="btnDeleteRecord" class="w-full bg-white hover:bg-red-50 text-red-600 border border-red-200 font-medium py-2 px-4 rounded-xl flex items-center justify-center transition-colors">
+                        <i class="fa-solid fa-trash mr-2"></i> Eliminar Registro
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 translate-y-20 opacity-0 bg-gray-900 text-white px-5 py-3 rounded-full shadow-2xl transition-all duration-300 z-[60] flex items-center pointer-events-none border border-gray-700">
+        <i id="toastIcon" class="mr-2"></i>
+        <span id="toastMsg" class="text-sm font-medium"></span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
